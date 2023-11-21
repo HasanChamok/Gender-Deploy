@@ -25,7 +25,7 @@ def predict_image(f,filepath):
     #Opening the Image file
     file = Image.open(filepath)
     #putting the result file in the result 
-    result = yolo.predict(file, save=True)[0]
+    result = yolo.predict(file, save=True, max_det=1)[0]
     
     #finding the bounding box, confidence score and class id from the result
     boxes = result.boxes.xyxy.tolist()
@@ -58,10 +58,10 @@ def predict_image(f,filepath):
     
     #prepare the json file
     response_data = {
-        # 'Labels' : class_names,
-        'Labels': label,
-        'Confidence Score' :  confidence,
-        'Boxes' : box
+        'Labels' : class_names,
+        # 'Labels': label,
+        'Confidence Score' :  confidences,
+        'Boxes' : boxes
     }
     
     return jsonify(response_data)
