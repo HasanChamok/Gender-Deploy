@@ -21,7 +21,7 @@ def predict_image(f,filepath):
     
     basepath = os.path.dirname(__file__)
     #loading the model
-    yolo = YOLO('bestNew.pt')
+    yolo = YOLO('genderBest.pt')
     #Opening the Image file
     file = Image.open(filepath)
     #putting the result file in the result 
@@ -70,7 +70,7 @@ def predict_image(f,filepath):
 def predict_video(f,filepath):
     baesname = os.path.dirname(__file__) #Getting the basename of the folder
     
-    yolo = YOLO('bestNew.pt') #Load the yolo model
+    yolo = YOLO('genderBest.pt') #Load the yolo model
     cap = cv.VideoCapture(filepath) #capturing the video from the video filepath
 
     output_data = [] #For saving the output result
@@ -97,7 +97,7 @@ def predict_video(f,filepath):
         
         #Now repeat the process for image Object detection 
         image = Image.fromarray(cv.cvtColor(frame,cv.COLOR_BGR2RGB)) #Converting the frame to PIL Image for yolo model
-        result = yolo.predict(image)[0]
+        result = yolo.predict(image,max_det=1)[0]
         
         boxes = result.boxes.xyxy.tolist()
         confidences = result.boxes.conf.tolist()
