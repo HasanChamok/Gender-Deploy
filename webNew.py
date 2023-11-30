@@ -6,7 +6,7 @@ import tensorflow as tf
 import subprocess
 from subprocess import Popen, PIPE
 import shutil
-from flask import Flask, request, jsonify,render_template, Response, send_file, url_for
+from flask import Flask, request, jsonify, render_template, Response, send_file, url_for
 import os
 from ultralytics import YOLO
 from PIL import Image
@@ -27,10 +27,6 @@ def index():
 
 Allowed_Image_Extenxion = ['jpg','jpeg','png']
 Allowed_Video_Extension = ['mp4','avi']
-
-timestamp = time.strftime("%Y%m%d_%H%M%S")  # Add a timestamp to make the filename unique
-output_video_filename = f'output_{timestamp}.mp4'
-
 
 @app.route("/",methods=["GET","POST"])
 def predict():
@@ -53,11 +49,12 @@ def predict():
                 frame = cv.imencode('.jpg',cv.UMat(img))[1].tobytes()
                 # image = Image.open(io.BytesIO(frame))
                 #loading the model
-                yolo = YOLO('bestNew.pt')
+                # yolo = YOLO('bestNew.pt')
+                yolo = YOLO('genderBest.pt')
                 #Opening the Image file
                 file = Image.open(filepath)
                 #putting the result file in the result 
-                result = yolo.predict(file, save=True, conf=0.4, iou=0.7, project="runs/detect")
+                result = yolo.predict(file, save=True, conf=0.4, iou=0.7, project="runs/detect", max_det = 1)
                 
                 return display(f.filename)
                 
@@ -70,6 +67,10 @@ def predict():
                 # Get video dimensions 
                 frame_width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
                 frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
+                
+                timestamp = time.strftime("%Y%m%d_%H%M%S")  # Add a timestamp to make the filename unique
+                global output_video_filename
+                output_video_filename = f'output_{timestamp}.mp4'
 
 
                 #Define codec and video writer Object
@@ -79,7 +80,8 @@ def predict():
                 # out = cv.VideoWriter(os.path.join(baesname, 'Detected_Videos', 'output.mp4'), fourcc, 30, (frame_width, frame_height))
                 # Get video dimensions from the first frame
 
-                yolo = YOLO('bestNew.pt') #Load the yolo model
+                # yolo = YOLO('bestNew.pt') #Load the yolo model
+                yolo = YOLO('genderBest.pt') #Load the yolo model
                 cv.namedWindow('result', cv.WND_PROP_FULLSCREEN)
                 cv.setWindowProperty('result', cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
 
@@ -89,12 +91,12 @@ def predict():
                     if not ret:
                         break
                     
-                    frame_count+=1 
-                    if frame_count%5!=0:
-                        continue
+                    # frame_count+=1 
+                    # if frame_count%5!=0:
+                    #     continue
                     #Do yolo detection on the frame here
                     # results = yolo.predict(frame, save=True)
-                    results = yolo(frame, save=True)
+                    results = yolo(frame, save=True, max_det =1)
                     cv.waitKey(1)
 
                     res_plotted = results[0].plot()
@@ -110,6 +112,9 @@ def predict():
                     
                     if cv.waitKey(1) == ord('q'):
                         break
+                    
+                cap.release()
+                out.release()
 
 
                 return video_feed()
